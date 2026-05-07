@@ -1,94 +1,247 @@
-import { ArrowDownRight, ArrowUpRight, AlertTriangle, Zap, ShieldCheck } from "lucide-react";
-import type { Signal } from "@/lib/signals";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  AlertTriangle,
+  ShieldCheck,
+  Zap,
+  Layers,
+  Target,
+} from "lucide-react";
+import type { SMCAnalysis } from "@/lib/smc";
 
-const kindMeta = {
-  FILTERED: {
-    label: "Sinal Filtrado",
-    Icon: ShieldCheck,
-    badgeClass: "bg-primary/15 text-primary border-primary/40",
+const dirMeta = {
+  CALL: {
+    color: "text-success",
+    border: "border-success/40",
+    bg: "bg-success/10",
+    glow: "animate-pulse-glow-success",
+    Icon: ArrowUpRight,
   },
-  MANIPULATION: {
-    label: "Manipulação Detectada",
-    Icon: Zap,
-    badgeClass: "bg-accent/15 text-accent border-accent/40",
+  PUT: {
+    color: "text-destructive",
+    border: "border-destructive/40",
+    bg: "bg-destructive/10",
+    glow: "animate-pulse-glow-destructive",
+    Icon: ArrowDownRight,
   },
-  ALERT: {
-    label: "Alerta de Mercado",
-    Icon: AlertTriangle,
-    badgeClass: "bg-destructive/15 text-destructive border-destructive/40",
+  AGUARDAR: {
+    color: "text-muted-foreground",
+    border: "border-border",
+    bg: "bg-secondary",
+    glow: "",
+    Icon: Target,
   },
 } as const;
 
-export function SignalCard({ signal }: { signal: Signal }) {
-  const isCall = signal.direction === "CALL";
-  const meta = kindMeta[signal.kind];
-  const dirColor = isCall ? "text-success" : "text-destructive";
-  const dirGlow = isCall ? "animate-pulse-glow-success" : "animate-pulse-glow-destructive";
-  const DirIcon = isCall ? ArrowUpRight : ArrowDownRight;
+export function SignalCard({ a }: { a: SMCAnalysis }) {
+  const m = dirMeta[a.sinal_final];
+  const isManip = a.manipulacao_detectada;
 
   return (
-    <article className="animate-fade-in-up rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-colors">
-      <header className="flex items-center justify-between gap-3 mb-4">
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-orbitron font-semibold uppercase tracking-widest ${meta.badgeClass}`}
-        >
-          <meta.Icon className="h-3 w-3" />
-          {meta.label}
-        </span>
+    <article className="animate-fade-in-up rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-colors space-y-4">
+      <header className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          {isManip ? (
+            <Badge tone="accent" Icon={Zap}>
+              Manipulação · {a.tipo_manipulacao.replace("_", " ")}
+            </Badge>
+          ) : a.filtros_aprovados === 5 ? (
+            <Badge tone="primary" Icon={ShieldCheck}>
+              Sinal Quântico 5/5
+            </Badge>
+          ) : (
+            <Badge tone="primary" Icon={ShieldCheck}>
+              Sinal Filtrado
+            </Badge>
+          )}
+          <span className="text-[10px] font-mono-tech text-muted-foreground">
+            {a.broker} · {a.timeframe}
+          </span>
+        </div>
         <span className="font-mono-tech text-xs text-muted-foreground">
-          {signal.filtersPassed}/{signal.filtersTotal} filtros
+          {a.filtros_aprovados}/{a.filtros_total} filtros
         </span>
       </header>
 
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div>
-          <p className="font-orbitron text-lg font-bold text-foreground tracking-wider">
-            {signal.asset}
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="font-orbitron text-lg font-bold text-foreground tracking-wider truncate">
+            {a.asset}
           </p>
           <p className="font-mono-tech text-xs text-muted-foreground mt-1">
-            Expira: {signal.expiry} · Entrada {signal.entryAt}
+            Entrada na abertura · {a.entryAt} BRT
           </p>
         </div>
         <div
-          className={`grid place-items-center h-14 w-14 rounded-2xl border ${
-            isCall ? "border-success/40 bg-success/10" : "border-destructive/40 bg-destructive/10"
-          } ${dirGlow}`}
+          className={`grid place-items-center h-16 w-16 rounded-2xl border ${m.border} ${m.bg} ${m.glow}`}
         >
-          <DirIcon className={`h-7 w-7 ${dirColor}`} />
+          <m.Icon className={`h-8 w-8 ${m.color}`} />
+          <span
+            className={`absolute mt-[68px] text-[10px] font-orbitron font-bold tracking-widest ${m.color}`}
+          >
+            {a.sinal_final}
+          </span>
         </div>
       </div>
 
-      <div className="space-y-1.5 mb-4">
-        {signal.filters.map((f) => (
-          <div key={f.name} className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{f.name}</span>
+      {/* SMC Grid */}
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <Cell k="Estrutura" v={a.estrutura} accent="primary" />
+        <Cell k="Wyckoff" v={a.fase_wyckoff} />
+        <Cell k="Movimento" v={a.ultimo_movimento} />
+        <Cell
+          k="BOS/CHoCH"
+          v={a.bos_choch === "NENHUM" ? "—" : a.bos_choch.replace("_", " ")}
+          accent={
+            a.bos_choch.includes("BULLISH")
+              ? "success"
+              : a.bos_choch.includes("BEARISH")
+                ? "destructive"
+                : undefined
+          }
+        />
+        <Cell
+          k="Order Block"
+          v={a.order_block}
+          accent={
+            a.order_block === "BULLISH"
+              ? "success"
+              : a.order_block === "BEARISH"
+                ? "destructive"
+                : undefined
+          }
+        />
+        <Cell
+          k="FVG"
+          v={a.fvg}
+          accent={
+            a.fvg === "BULLISH" ? "success" : a.fvg === "BEARISH" ? "destructive" : undefined
+          }
+        />
+        <Cell k="Padrão Vela" v={a.padrao_vela} />
+        <Cell
+          k="Vela Atual"
+          v={a.vela_atual}
+          accent={
+            a.vela_atual === "BULLISH"
+              ? "success"
+              : a.vela_atual === "BEARISH"
+                ? "destructive"
+                : undefined
+          }
+        />
+      </div>
+
+      {/* Filtros */}
+      <div className="space-y-1.5">
+        {a.filtros_lista.map((f) => (
+          <div key={f.nome} className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{f.nome}</span>
             <span
-              className={`font-mono-tech font-semibold ${
-                f.passed ? "text-success" : "text-muted-foreground/60"
-              }`}
+              className={`font-mono-tech font-semibold ${f.aprovado ? "text-success" : "text-muted-foreground/50"}`}
             >
-              {f.passed ? "✓ OK" : "— skip"}
+              {f.aprovado ? "✓ OK" : "— skip"}
             </span>
           </div>
         ))}
       </div>
 
-      <footer className="flex items-center justify-between pt-4 border-t border-border">
+      {/* Zonas */}
+      <div className="rounded-2xl border border-border bg-background/50 p-3 space-y-1.5">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Layers className="h-3 w-3" />
+          Zonas Ativas
+        </div>
+        {a.zonas.map((z, i) => (
+          <p key={i} className="text-xs text-foreground/80">
+            <span className="font-mono-tech text-accent">{z.tipo}</span>{" "}
+            <span className="text-muted-foreground">·</span> {z.descricao}
+          </p>
+        ))}
+      </div>
+
+      {/* Manipulação alert */}
+      {isManip && (
+        <div className="rounded-2xl border border-destructive/50 bg-destructive/10 p-3 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-orbitron text-xs font-bold text-destructive uppercase tracking-widest">
+              Alerta de Manipulação
+            </p>
+            <p className="text-xs text-foreground/80 mt-1">{a.alerta_manipulacao}</p>
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-3">
+        {a.motivo}
+      </p>
+      <p className="text-[10px] font-mono-tech text-muted-foreground/70">{a.ciclo_atual}</p>
+
+      <footer className="flex items-center justify-between pt-3 border-t border-border">
         <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-          Confiança
+          Confiança IA
         </span>
         <div className="flex items-center gap-2">
-          <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
+          <div className="h-1.5 w-28 rounded-full bg-secondary overflow-hidden">
             <div
               className="h-full bg-prisma rounded-full"
-              style={{ width: `${signal.confidence}%` }}
+              style={{ width: `${a.confianca}%` }}
             />
           </div>
-          <span className={`font-mono-tech text-sm font-bold ${dirColor}`}>
-            {signal.confidence}%
-          </span>
+          <span className={`font-mono-tech text-sm font-bold ${m.color}`}>{a.confianca}%</span>
         </div>
       </footer>
     </article>
+  );
+}
+
+function Badge({
+  children,
+  Icon,
+  tone,
+}: {
+  children: React.ReactNode;
+  Icon: React.ComponentType<{ className?: string }>;
+  tone: "primary" | "accent" | "destructive";
+}) {
+  const cls =
+    tone === "primary"
+      ? "bg-primary/15 text-primary border-primary/40"
+      : tone === "accent"
+        ? "bg-accent/15 text-accent border-accent/40"
+        : "bg-destructive/15 text-destructive border-destructive/40";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-orbitron font-semibold uppercase tracking-widest ${cls}`}
+    >
+      <Icon className="h-3 w-3" />
+      {children}
+    </span>
+  );
+}
+
+function Cell({
+  k,
+  v,
+  accent,
+}: {
+  k: string;
+  v: string;
+  accent?: "primary" | "success" | "destructive";
+}) {
+  const color =
+    accent === "success"
+      ? "text-success"
+      : accent === "destructive"
+        ? "text-destructive"
+        : accent === "primary"
+          ? "text-prisma"
+          : "text-foreground";
+  return (
+    <div className="rounded-xl border border-border bg-background/40 px-3 py-2">
+      <p className="text-[9px] uppercase tracking-widest text-muted-foreground">{k}</p>
+      <p className={`font-mono-tech text-xs font-semibold ${color} truncate`}>{v}</p>
+    </div>
   );
 }
