@@ -106,7 +106,7 @@ const FILTROS_NOMES = [
   "BOS / CHoCH",
   "Order Block / FVG",
   "Padrão de Vela",
-  "Sem Manipulação",
+  "Movimento LH confirmado",
 ];
 
 function pick<T>(arr: readonly T[]): T {
