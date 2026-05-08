@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { getCandleInfo, formatCountdown, TIMEFRAMES, type Timeframe } from "@/lib/smc";
 
 export function CandleTimer({ timeframe }: { timeframe: Timeframe }) {
-  const [info, setInfo] = useState(() => getCandleInfo(TIMEFRAMES[timeframe]));
+  const [info, setInfo] = useState<ReturnType<typeof getCandleInfo> | null>(null);
 
   useEffect(() => {
+    setInfo(getCandleInfo(TIMEFRAMES[timeframe]));
     const id = setInterval(() => setInfo(getCandleInfo(TIMEFRAMES[timeframe])), 250);
     return () => clearInterval(id);
   }, [timeframe]);
 
-  const urgent = info.remainingSec <= 5;
+  const urgent = !!info && info.remainingSec <= 5;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -26,26 +27,26 @@ export function CandleTimer({ timeframe }: { timeframe: Timeframe }) {
           <p
             className={`font-mono-tech text-3xl font-bold ${urgent ? "text-destructive animate-pulse-glow-destructive" : "text-prisma"}`}
           >
-            {formatCountdown(info.remainingSec)}
+            {info ? formatCountdown(info.remainingSec) : "--:--"}
           </p>
         </div>
         <div className="text-right space-y-0.5">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
             Abre · Fecha
           </p>
-          <p className="font-mono-tech text-xs text-foreground">{info.open}</p>
-          <p className="font-mono-tech text-xs text-muted-foreground">{info.close}</p>
+          <p className="font-mono-tech text-xs text-foreground">{info?.open ?? "--:--:--"}</p>
+          <p className="font-mono-tech text-xs text-muted-foreground">{info?.close ?? "--:--:--"}</p>
         </div>
       </div>
 
       <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
         <div
           className="h-full bg-prisma transition-[width] duration-200"
-          style={{ width: `${info.progress * 100}%` }}
+          style={{ width: `${(info?.progress ?? 0) * 100}%` }}
         />
       </div>
       <p className="mt-2 text-[10px] text-muted-foreground text-center font-mono-tech">
-        Próxima entrada na abertura de {info.nextOpenAt}
+        Próxima entrada na abertura de {info?.nextOpenAt ?? "--:--:--"}
       </p>
     </div>
   );
