@@ -6,6 +6,7 @@ import {
   Zap,
   Layers,
   Target,
+  Trash2,
 } from "lucide-react";
 import type { SMCAnalysis } from "@/lib/smc";
 
@@ -33,16 +34,32 @@ const dirMeta = {
   },
 } as const;
 
-export function SignalCard({ a }: { a: SMCAnalysis }) {
+export function SignalCard({ a, onDelete }: { a: SMCAnalysis; onDelete?: (id: string) => void }) {
   const m = dirMeta[a.sinal_final];
   const isManip = a.manipulacao_detectada;
 
   return (
-    <article className="animate-fade-in-up rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-colors space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
+    <article
+      className={`relative animate-fade-in-up rounded-2xl border p-5 transition-colors space-y-4 ${
+        isManip
+          ? "border-warning/60 bg-warning/10 hover:border-warning"
+          : "border-border bg-card hover:border-primary/40"
+      }`}
+    >
+      {onDelete && (
+        <button
+          type="button"
+          onClick={() => onDelete(a.id)}
+          aria-label="Excluir sinal"
+          className="absolute top-3 right-3 z-10 grid place-items-center h-7 w-7 rounded-full border border-border bg-background/70 text-muted-foreground hover:text-destructive hover:border-destructive/60 transition-colors"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      )}
+      <header className="flex items-center justify-between gap-2 flex-wrap pr-8">
         <div className="flex items-center gap-2">
           {isManip ? (
-            <Badge tone="accent" Icon={Zap}>
+            <Badge tone="warning" Icon={Zap}>
               Manipulação · {a.tipo_manipulacao.replace("_", " ")}
             </Badge>
           ) : a.filtros_aprovados === 5 ? (
@@ -203,14 +220,16 @@ function Badge({
 }: {
   children: React.ReactNode;
   Icon: React.ComponentType<{ className?: string }>;
-  tone: "primary" | "accent" | "destructive";
+  tone: "primary" | "accent" | "destructive" | "warning";
 }) {
   const cls =
     tone === "primary"
       ? "bg-primary/15 text-primary border-primary/40"
       : tone === "accent"
         ? "bg-accent/15 text-accent border-accent/40"
-        : "bg-destructive/15 text-destructive border-destructive/40";
+        : tone === "warning"
+          ? "bg-warning/20 text-warning border-warning/50"
+          : "bg-destructive/15 text-destructive border-destructive/40";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-orbitron font-semibold uppercase tracking-widest ${cls}`}
