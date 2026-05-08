@@ -108,7 +108,7 @@ function Index() {
           </div>
 
           <section className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                   Smart Money Concepts · Tempo real
@@ -117,10 +117,21 @@ function Index() {
                   Sinais Confirmados
                 </h2>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-glow-success" />
-                <span className="font-mono-tech">live</span>
-              </span>
+              <div className="flex items-center gap-2">
+                {signals.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSignals([])}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-orbitron uppercase tracking-widest text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+                  >
+                    Limpar tudo
+                  </button>
+                )}
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-glow-success" />
+                  <span className="font-mono-tech">live</span>
+                </span>
+              </div>
             </div>
 
             {signals.length === 0 ? (
@@ -135,7 +146,11 @@ function Index() {
             ) : (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {signals.map((s) => (
-                  <SignalCard key={s.id} a={s} />
+                  <SignalCard
+                    key={s.id}
+                    a={s}
+                    onDelete={(id) => setSignals((p) => p.filter((x) => x.id !== id))}
+                  />
                 ))}
               </div>
             )}
