@@ -34,7 +34,15 @@ const dirMeta = {
   },
 } as const;
 
-export function SignalCard({ a, onDelete }: { a: SMCAnalysis; onDelete?: (id: string) => void }) {
+export function SignalCard({
+  a,
+  onDelete,
+  isLatest,
+}: {
+  a: SMCAnalysis;
+  onDelete?: (id: string) => void;
+  isLatest?: boolean;
+}) {
   const m = dirMeta[a.sinal_final];
   const isManip = a.manipulacao_detectada;
 
@@ -44,8 +52,13 @@ export function SignalCard({ a, onDelete }: { a: SMCAnalysis; onDelete?: (id: st
         isManip
           ? "border-warning/60 bg-warning/10 hover:border-warning"
           : "border-border bg-card hover:border-primary/40"
-      }`}
+      } ${isLatest ? "ring-2 ring-prisma/60 shadow-[0_0_30px_rgba(168,85,247,0.25)]" : ""}`}
     >
+      {isLatest && (
+        <span className="absolute -top-2 left-4 z-10 rounded-full bg-prisma px-2.5 py-0.5 text-[9px] font-orbitron font-bold uppercase tracking-widest text-background animate-pulse">
+          ● Recente
+        </span>
+      )}
       {onDelete && (
         <button
           type="button"

@@ -145,10 +145,11 @@ function Index() {
               </div>
             ) : (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {signals.map((s) => (
+                {signals.map((s, i) => (
                   <SignalCard
                     key={s.id}
                     a={s}
+                    isLatest={i === 0}
                     onDelete={(id) => setSignals((p) => p.filter((x) => x.id !== id))}
                   />
                 ))}

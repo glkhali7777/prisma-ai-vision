@@ -106,7 +106,7 @@ const FILTROS_NOMES = [
   "BOS / CHoCH",
   "Order Block / FVG",
   "Padrão de Vela",
-  "Sem Manipulação",
+  "Movimento LH confirmado",
 ];
 
 function pick<T>(arr: readonly T[]): T {
@@ -218,7 +218,7 @@ export function generateAnalysis(broker: Broker, timeframe: Timeframe, asset?: s
     timeframe,
     estrutura,
     fase_wyckoff: wyckoff,
-    ultimo_movimento: pick(["HL", "LH", "LL"] as const),
+    ultimo_movimento: "LH",
     bos_choch: bos,
     order_block: ob,
     fvg: pick(["BULLISH", "BEARISH", "NENHUM"] as const),
