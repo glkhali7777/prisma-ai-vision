@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [active, setActive] = useState(true);
+  const [active, setActive] = useState(false);
   const [timeframe, setTimeframe] = useState<Timeframe>("M1");
   const [broker, setBroker] = useState<Broker>("Quotex");
   const [signals, setSignals] = useState<SMCAnalysis[]>([]);

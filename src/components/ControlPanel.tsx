@@ -75,14 +75,14 @@ export function ControlPanel({
       <div className="space-y-2.5">
         <button
           onClick={onToggle}
-          className={`w-full rounded-2xl px-5 py-3.5 font-orbitron text-sm font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+          className={`w-full rounded-2xl px-5 py-3.5 font-orbitron text-sm font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border ${
             active
-              ? "bg-prisma text-white glow-primary animate-pulse-glow"
-              : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+              ? "bg-success text-background border-success shadow-[0_0_25px_hsl(160_100%_50%/0.45)] animate-pulse-glow-success"
+              : "bg-destructive/15 text-destructive border-destructive/50 hover:bg-destructive/25"
           }`}
         >
           <Power className="h-4 w-4" />
-          {active ? "Auto · Abertura de Vela" : "Ligar Automático"}
+          {active ? "Robô Ligado · Auto" : "Robô Desligado · Ligar"}
         </button>
         <button
           onClick={onAnalyze}
